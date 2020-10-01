@@ -1,0 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap');
+* {
+    font-family: 'Lato', Arial, Helvetica, sans-serif;
+}
+
+body {
+    color: var(--dark-blue);
+}
+
+#heading {
+    color: var(--purple);
+    text-transform: uppercase;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+#device.card:hover,
+#device.card:focus {
+    border: 1;
+    transition-duration: 0.3s;
+    border-color: var(--primary)!important;
+}
+
+form label,
+label {
+    font-size: x-small;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: var(--secondary);
+}
+
+.card {
+    border: 1;
+    border-color: transparent;
+    transition-duration: 0.3s;
+    transition-property: border-color;
+}
+
+.alert-info {
+    background-color: var(--info);
+    color: var(--dark-blue);
+}
+
+.nav .nav-link.active {
+    color: var(--primary);
+}
+
+.nav-link.active.rounded-pill {
+    background-color: var(--info);
+}
+
+.nav-link:not(.active) {
+    color: var(--secondary);
+}
+
+.btn {
+    font-weight: bold;
+    padding: 8px 24px;
+}
+
+.btn-info {
+    color: var(--primary)!important;
+}
+
+.btn-danger {
+    color: var(--danger)!important;
+    background-color: #FECBC3;
+    border: 0;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+    color: var(--light)!important;
+}
+
+.form-control,
+.btn {
+    border-radius: 10px;
+    border-width: 1px;
+}
+
+.form-control {
+    border: 1px solid #dfe1e5;
+}
+
+.form-control:focus,
+.btn:focus {
+    box-shadow: 0 0rem 0.4rem rgba(0, 0, 0, 0.2) !important;
+}
+
+.form-control:focus {
+    border-color: white;
+}
+
+.sidebar .nav-link {
+    color: var(--secondary);
+    font-weight: bold;
+    transition-duration: 0.3s;
+    transition-property: color;
+}
+
+.sidebar .nav-link:hover,
+.nav-link:focus {
+    color: var(--dark);
+    transition-duration: 0.3s;
+}
+
+.sidebar .nav-link.active {
+    color: var(--primary);
+}
+
+.sidebar .nav-item {
+    padding-top: .5em;
+}
+
+.sidebar .nav-item svg {
+    margin-right: 1em;
+}
+
+#current-active {
+    margin: 0!important;
+}
