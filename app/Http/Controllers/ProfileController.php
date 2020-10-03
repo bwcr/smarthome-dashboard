@@ -14,17 +14,18 @@ class ProfileController extends Controller
 
     public function index()
     {
-
         $userSession = Session::get('user');
+        // die($userSession);
         $auth = app('firebase.auth');
         $firestore = app('firebase.firestore');
 
-        $user = $auth->getUser($userSession);
+        // $userId = $auth->getUser($userSession);
+        // die($userId->uid);
         $firestore = $firestore->database();
 
         //Firestore
         $collectionReference = $firestore->collection('users');
-        $documentReference = $collectionReference->document($userSession);
+        $documentReference = $collectionReference->document($userSession->uid);
         $snapshot = $documentReference->snapshot();
 
         $initial = substr($snapshot['first_name'], 0, 1) . substr($snapshot['last_name'], 0, 1);

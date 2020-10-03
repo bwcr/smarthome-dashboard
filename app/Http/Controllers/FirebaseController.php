@@ -103,6 +103,51 @@ class FirebaseController extends Controller
         }
     }
 
+    public function email(Request $data)
+    {
+        $firestore = app('firebase.firestore');
+        $firestore = $firestore->database();
+
+        $user = Session::get('user');
+
+        $userSession = $user->uid;
+
+        $userProperties = [
+            'email' => $data['email'],
+            'password' => $data['password']
+        ];
+
+        $validator = Validator::make($data->all(), [
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('profile')
+            ->withErrors($validator)
+            ->withInput();
+        }
+        else
+        {
+            try
+            {
+                $auth = app('firebase.auth');
+                $auth->changeUserEmail($userSession, $data['email']);
+
+                //Update Firestore
+                $firestore->collection('users')->document($userSession)->set($userProperties, ['merge' => true]);
+                return redirect()->route('login')->with('message', 'Your data has been successfully update, please attempt to login for reauthenticate');
+            }
+            catch (\Kreait\Firebase\Exception\Auth\AuthError | \Kreait\Firebase\Exception\Auth\EmailExists $e)
+            {
+                $message = $e->getMessage();
+                return redirect()->route('login')
+                ->withInput()
+                ->withErrors(['email' => $message]);
+            }
+        }
+
+    }
     public function update(Request $data)
     {
 
@@ -111,14 +156,14 @@ class FirebaseController extends Controller
 
         $userProperties = [
             'first_name' => $data['first_name'],
-            'last_name' => $data['last_name'],
-            'email' => $data['email']
+            'last_name' => $data['last_name']
         ];
 
         $user = Session::get('user');
 
+        $userSession = $user->uid;
+
         $validator = Validator::make($data->all(), [
-            'email' => 'required|email',
             'first_name' => 'required|alpha',
             'last_name' => 'alpha'
         ]);
@@ -133,13 +178,10 @@ class FirebaseController extends Controller
         {
             try
             {
-                $auth = app('firebase.auth');
-                $auth->changeUserEmail($user, $data['email']);
-
                 //Update Firestore
-                $firestore->collection('users')->document($user)->set($userProperties, ['merge' => true]);
-                $data->session()->flash('success', 'Pembaruan data berhasil');
-                return redirect()->route('profile');
+                $firestore->collection('users')->document($userSession)->set($userProperties, ['merge' => true]);
+                // $data->session()->flush();
+                return redirect()->route('profile')->with('success', 'Data has been successfully updated');
             }
             catch (\Kreait\Firebase\Exception\Auth\AuthError | \Kreait\Firebase\Exception\Auth\EmailExists $e)
             {

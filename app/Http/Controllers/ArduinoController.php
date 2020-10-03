@@ -10,26 +10,12 @@ use Illuminate\Support\Facades\Validator;
 
 class ArduinoController extends Controller
 {
-    // public function create(Request $data)
-    // {
-    //     try
-    //     {
-    //         $input = $data->all();
-    //         $database = app('firebase.database');
-    //         $newPostKey = $database->getReference('smarthomeproject-d187f/lampu')->push->getKey()
-    //         $updates = [
-
-    //         ]
-    //         $reference = $database->getReference('smarthomeproject-d187f/')
-    //         ->update($updates);
-    //     }
-    // }
-
     public function index()
     {
         $firestore = app('firebase.firestore');
         $firestore = $firestore->database();
-        $user = Session::get('user');
+
+        $user = Session::get('user')->uid;
         $collection = $firestore->collection('users')->document($user)->collection('devices');
         $farmSnapshot = $collection->where('device_type','=','Kebun')->documents();
         $lampSnapshot = $collection->where('device_type', '=', 'Lampu')->documents();
@@ -45,7 +31,7 @@ class ArduinoController extends Controller
 
     public function read($id)
     {
-        $user = Session::get('user');
+        $user = Session::get('user')->uid;
 
         $firestore = app('firebase.firestore');
         $firestore = $firestore->database();
@@ -65,7 +51,7 @@ class ArduinoController extends Controller
 
     public function update(Request $data, $id)
     {
-        $user = Session::get('user');
+        $user = Session::get('user')->uid;
 
         $array = [
             'device_name' => $data['device_name'],

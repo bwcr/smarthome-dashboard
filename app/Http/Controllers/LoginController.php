@@ -38,32 +38,37 @@ class LoginController extends Controller
         $email = $request->email;
         $pass = $request->password;
 
-        if($auth = app('firebase.auth'))
+        $auth = app('firebase.auth');
+
+        try
         {
-            try
-            {
-                $auth->signInWithEmailAndPassword($email, $pass);
-                $user = $auth->getUserByEmail($email);
+            $signIn = $auth->signInWithEmailAndPassword($email, $pass);
+            $user = $auth->getUserByEmail($email);
 
-                $verified = $user->emailVerified;
-                if($verified == null)
-                {
-                    Session::flash('message', 'You have not verifiy your email yet. Consider to check your email for the verification link');
-                    return redirect()->route('login');
-                }
-                else
-                {
-                    $request->session()->put('user', $user->uid);
-                    return redirect()->route('profile');
-                }
+            $verified = $user->emailVerified;
 
-            } catch (\Kreait\Firebase\Auth\SignIn\FailedToSignIn | \Kreait\Firebase\Exception\InvalidArgumentException | \Kreait\Firebase\Exception\Auth\InvalidPassword $e)
+            if($verified == null)
             {
-                $message = $e->getMessage();
+                // Session::flash('message', 'You have not verifiy your email yet. Consider to check your email for the verification link');
                 return redirect()->route('login')
-                ->withInput()
-                ->withErrors(['email' => $message]);
+                ->with('message', 'You have not verifiy your email yet. Consider to check your email for the verification link');
             }
+            else
+            {
+                $request->session()->put('tokenResponse', $signIn->asTokenResponse());
+                return redirect()->route('profile');
+            }
+
+        } catch (\Kreait\Firebase\Auth\SignIn\FailedToSignIn | \Kreait\Firebase\Exception\InvalidArgumentException | \Kreait\Firebase\Exception\Auth\InvalidPassword $e)
+        {
+            $message = $e->getMessage();
+            if($message == 'EMAIL_NOT_FOUND' || $message == 'INVALID_PASSWORD')
+            {
+                $message = 'The email or password is incorrect';
+            }
+            return redirect()->route('login')
+            ->withInput()
+            ->withErrors(['email' => $message]);
         }
 
         // $request->session()->put('uid', $uid);
@@ -74,8 +79,21 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
-        $request->session()->forget('user');
-        Session::flash('message', 'You have been logged out successfully');
-        return redirect()->route('login');
+        // $request->session()->forget('user','refreshToken');
+        $auth = app('firebase.auth');
+        $uid = Session::get('user')->uid;
+        $auth->revokeRefreshTokens($uid);
+        $tokenResponse = Session::get('tokenResponse');
+        $tokenId = $tokenResponse['id_token'];
+
+        try
+        {
+            $verifiedIdToken = $auth->verifyIdToken($tokenId, $checkIfRevoked = true);
+        }
+        catch (RevokedIdToken $e)
+        {
+            $request->session()->flush();
+            return redirect()->route('login')->with(['message' => $e]);
+        }
     }
 }

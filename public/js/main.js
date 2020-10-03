@@ -6,6 +6,18 @@ $(document).ready(function() {
         }
     }
 
+    window.setTimeout(function() {
+        $(".alert").fadeTo(500, 0).slideUp(500, function() {
+            $(this).remove();
+        });
+    }, 2000);
+
+    $(function() {
+        $('.sortable').sortable({
+            placeholder: "ui-state-highlight"
+        });
+    })
+
     //Loading Button
     $("form").submit(function(e) {
         console.log('loading button');
