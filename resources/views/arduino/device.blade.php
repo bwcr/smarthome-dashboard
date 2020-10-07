@@ -6,17 +6,19 @@
     <h1 id="heading">{{ $data['device_type'] }}
         {{ $data['device_name'] }}
     </h1>
-    <div class="align-self-center">
+    <div class="align-self-center d-inline-flex">
         <p class="m-0 text-secondary">{{ __('Added on') }}
             {{ $data['date_created'] }}</p>
+        <p class="mx-3 text-secondary"> IP Address: {{ $data['ip_address'] }} </p>
+        <p class="mr-3 text-secondary"> Wifi Name: {{ $data['wifi_ssid'] }} </p>
     </div>
-</div>
-<div id="content" class="mt-3">
-    <nav class="breadcrumb">
+    <nav aria-label="breadcrumb" class="breadcrumb">
         <a class="breadcrumb-item"
             href="{{ route('arduino') }}">{{ __('Arduino') }}</a>
-        <span class="breadcrumb-item active">{{ $id }}</span>
+        <span aria-current="page" class="breadcrumb-item active">{{ $data['device_name'] }}</span>
     </nav>
+</div>
+<div id="content" class="mt-3">
     <div class="d-block">
         @if(Session::has('success'))
             <div class="alert alert-success" role="alert">
@@ -212,10 +214,22 @@
     <div id="content-body" class="col-7 col-md-4 col-xl-3 mt-md-0 mt-3">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h4 id="heading" class="small card-title text-center">Hapus Perangkat</h4>
+                <h4 id="heading" class="small card-title text-center">{{ __('Delete Device') }}</h4>
                 <div class="d-block text-center">
-                    <a name="deleteDevice" id="deleteDevice" class="btn btn-danger" href="deleteDevice"
-                        role="button">Hapus</a>
+                    <form method="POST" action="{{ route('arduino.delete', $id) }}">
+                        @csrf
+                        <div class="form-group">
+                            <label for="password">{{__('Password')}}</label>
+                            <input type="password" class="form-control @error('password') is-invalid @enderror"
+                                name="password" id="password" placeholder="Enter your current password">
+                            @error('password')
+                                <span class="invalid-feedback">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </div>
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
                 </div>
             </div>
         </div>

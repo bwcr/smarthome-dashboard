@@ -56,7 +56,12 @@ Route::group(['middleware' => 'firebase'], function () {
     Route::post('/profile/password/update', 'PasswordController@update')->name('password.update');
 
     //Arduino
+    Route::get('arduino', 'ArduinoController@index')->name('arduino');
+    Route::post('arduino/create' , 'ArduinoController@create')->name('arduino.create');
     Route::get('arduino/{id}', 'ArduinoController@read')->name('arduino.read');
     Route::post('arduino/update/{id}', 'ArduinoController@update')->name('arduino.update');
-    Route::get('arduino', 'ArduinoController@index')->name('arduino');
+    Route::post('arduino/delete/{id}', 'ArduinoController@delete')->name('arduino.delete');
 });
+
+Route::get('{id}/{deviceId}/sensor/add', 'SensorController@add')->name('sensor.add');
+Route::get('{id}/{deviceId}/sensor/sync', 'SensorController@sync')->name('sensor.sync');

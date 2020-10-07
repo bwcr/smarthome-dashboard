@@ -9,7 +9,7 @@ use Google\Cloud\Firestore\FirestoreClient;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
-
+use Kreait\Firebase\Exception\Auth\EmailExists;
 
 class FirebaseController extends Controller
 {
@@ -19,27 +19,6 @@ class FirebaseController extends Controller
 
     public function create(Request $data)
     {
-        // if(request()->ajax()){
-        //     $auth = app('firebase.auth');
-        //     $firestore = new FirestoreClient([
-        //         'projectId' => 'smarthomeproject-d187f',
-        //     ]);
-
-        //     $userProperties = [
-        //         'first_name' => $data['first_name'],
-        //         'last_name' => $data['last_name'],
-        //         'email' => $data['email'],
-        //         'password' => $data['password'],
-        //     ];
-
-        //     $user = $data['userId'];
-        //     $firestore->collection('users')->document($user)->set($userProperties);
-        //     Session::flash('success', 'You have succesfully signed up! Be sure to check your email for verification to sign in');
-        //     return redirect()->route('login');
-        // } else {
-        //     die();
-        // }
-
         $auth = app('firebase.auth');
         $firestore = app('firebase.firestore');
 
@@ -105,12 +84,16 @@ class FirebaseController extends Controller
 
     public function email(Request $data)
     {
+        $auth = app('firebase.auth');
         $firestore = app('firebase.firestore');
         $firestore = $firestore->database();
 
         $user = Session::get('user');
 
         $userSession = $user->uid;
+
+        $uid = $auth->getUser($userSession);
+        $email = $uid->email;
 
         $userProperties = [
             'email' => $data['email'],
@@ -131,19 +114,30 @@ class FirebaseController extends Controller
         {
             try
             {
-                $auth = app('firebase.auth');
+                $auth->signInWithEmailAndPassword($email, $userProperties['password']);
                 $auth->changeUserEmail($userSession, $data['email']);
 
                 //Update Firestore
                 $firestore->collection('users')->document($userSession)->set($userProperties, ['merge' => true]);
                 return redirect()->route('login')->with('message', 'Your data has been successfully update, please attempt to login for reauthenticate');
             }
-            catch (\Kreait\Firebase\Exception\Auth\AuthError | \Kreait\Firebase\Exception\Auth\EmailExists $e)
+            catch (\Kreait\Firebase\Exception\Auth\EmailExists $e)
             {
                 $message = $e->getMessage();
-                return redirect()->route('login')
-                ->withInput()
-                ->withErrors(['email' => $message]);
+                return redirect()->route('profile')
+                ->withErrors(['email' => $message])
+                ->withInput();
+            }
+            catch (\Kreait\Firebase\Auth\SignIn\FailedToSignIn $e)
+            {
+                $message = $e->getMessage();
+                if($message == 'INVALID_PASSWORD')
+                {
+                    $message = 'Password is incorrect';
+                }
+                return redirect()->route('profile')
+                ->withErrors(['password' => $message])
+                ->withInput();
             }
         }
 
@@ -165,7 +159,7 @@ class FirebaseController extends Controller
 
         $validator = Validator::make($data->all(), [
             'first_name' => 'required|alpha',
-            'last_name' => 'alpha'
+            'last_name' => 'nullable|alpha'
         ]);
 
         if ($validator->fails()) {

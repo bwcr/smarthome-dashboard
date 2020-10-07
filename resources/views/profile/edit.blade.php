@@ -30,8 +30,7 @@
                 <div class="form-group">
                     <label for="first_name">{{ __('First Name') }}</label>
                     <input type="text" name="first_name" id="firstName"
-                        class="form-control @error('first_name') is-invalid @enderror"
-                        value="" placeholder=""
+                        class="form-control @error('first_name') is-invalid @enderror" value="" placeholder=""
                         autocomplete="given-name" autofocus aria-describedby="firstNameId">
 
                     @error('first_name')
@@ -43,8 +42,7 @@
                 <div class="form-group">
                     <label for="last_name">{{ __('Last Name') }}</label>
                     <input type="text" name="last_name" id="lastName"
-                        class="form-control @error('last_name') is-invalid @enderror"
-                        value="" placeholder=""
+                        class="form-control @error('last_name') is-invalid @enderror" value="" placeholder=""
                         autocomplete="family-name" autofocus aria-describedby="lastNameId">
 
                     @error('last_name')
@@ -66,8 +64,7 @@
                 <div class="form-group col-12">
                     <label for="email">{{ __('Email') }}</label>
                     <input type="email" name="email" id="email"
-                        class="form-control @error('email') is-invalid @enderror"
-                        value="" placeholder=""
+                        class="form-control @error('email') is-invalid @enderror" value="" placeholder=""
                         aria-describedby="emailId" autocomplete="email">
                     <small id="emailId" class="text-muted">{{ __('Updating email address redirects you to authenticate your login credentials and verify your
                             email again.') }}</small>
@@ -80,8 +77,14 @@
                 </div>
                 <div class="form-group col-12">
                     <label for="password">Password</label>
-                    <input type="password" name="password" id="password" class="form-control" placeholder=""
+                    <input type="password" name="password" id="password"
+                        class="form-control @error('password') is-invalid @enderror" placeholder=""
                         aria-describedby="passwordId">
+                    @error('password')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
                 </div>
                 <div class="col">
                     <button type="submit" class="btn btn-info">{{ __('Update Email') }}</button>
@@ -105,10 +108,10 @@
                     @enderror
                 </div>
                 <div class="form-group">
-                    <label for="password">{{ __('New Password') }}</label>
-                    <input type="password" class="form-control @error('password') is-invalid @enderror" required
-                        autocomplete="new-password" name="password" id="password" placeholder="">
-                    @error('password')
+                    <label for="password_new">{{ __('New Password') }}</label>
+                    <input type="password" class="form-control @error('password_new') is-invalid @enderror" required
+                        autocomplete="new-password" name="password_new" id="password_new" placeholder="">
+                    @error('password_new')
                         <span class="invalid-feedback">
                             <strong>{{ $message }}</strong>
                         </span>

@@ -46,52 +46,69 @@ label {
     color: var(--dark-blue);
 }
 
-.nav .nav-link.active {
-    color: var(--primary);
+.nav {
+    &-link {
+        &.active {
+            color: var(--primary);
+            &.rounded-pill {
+                background-color: var(--info);
+            }
+        }
+        color: var(--secondary);
+    }
 }
 
-.nav-link.active.rounded-pill {
-    background-color: var(--info);
-}
-
-.nav-link:not(.active) {
-    color: var(--secondary);
-}
-
+$light-red: #FECBC3;
 .btn {
+    &-info {
+        color: var(--primary)!important;
+    }
     font-weight: bold;
     padding: 8px 24px;
+    &-danger {
+        color: var(--danger)!important;
+        background-color: $light-red;
+        border: 0;
+        &:hover:not(:disabled),
+        &:focus {
+            background-color: scale-color($color: $light-red, $lightness: -10%);
+            color: scale-color($color: $light-red, $lightness: -15%);
+        }
+        &:disabled {
+            background-color: scale-color($color: $light-red, $lightness: -10%);
+            color: scale-color($color: $light-red, $lightness: -15%);
+        }
+    }
 }
 
-.btn-info {
-    color: var(--primary)!important;
-}
-
-.btn-danger {
-    color: var(--danger)!important;
-    background-color: #FECBC3;
-    border: 0;
-    &:hover,
-    &:focus {
-        color: var(--light)!important;
+.breadcrumb {
+    padding: 0;
+    background-color: transparent;
+    &-item+.breadcrumb-item {
+        &.active {
+            color: var(--secondary);
+        }
+        &::before {
+            color: var(--secondary);
+            content: '>\00a0';
+        }
     }
 }
 
 .form-control {
     border: 1px solid #dfe1e5;
-    .btn {
-        border-radius: 10px;
-        border-width: 1px;
+    &:focus {
+        border-color: white;
     }
 }
 
-.form-control:focus,
-.btn:focus {
-    box-shadow: 0 0rem 0.4rem rgba(0, 0, 0, 0.2) !important;
-}
-
-.form-control:focus {
-    border-color: white;
+.form-control,
+.btn {
+    border-radius: 10px;
+    border-width: 1px;
+    &:focus {
+        box-shadow: 0 0rem 0.4rem rgba(0, 0, 0, 0.2) !important;
+    }
 }
 
 .sidebar {
@@ -105,9 +122,9 @@ label {
             color: var(--dark);
             transition-duration: 0.3s;
         }
-    }
-    .nav-link.active {
-        color: var(--primary);
+        &.active {
+            color: var(--primary);
+        }
     }
     .nav-item {
         padding-top: .5em;

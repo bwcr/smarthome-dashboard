@@ -73,9 +73,8 @@ class RegisterController extends Controller
     {
         if(request()->ajax()){
             $auth = app('firebase.auth');
-            $firestore = new FirestoreClient([
-                'projectId' => 'smarthomeproject-d187f',
-            ]);
+            $firestore = app('firebase.firestore');
+            $firestore = $firestore->database();
 
             $userProperties = [
                 'first_name' => $data['first_name'],

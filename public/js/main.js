@@ -18,6 +18,31 @@ $(document).ready(function() {
         });
     })
 
+    $('form button').attr('disabled', true)
+
+    $('form').on('change', function() {
+        $(this).find("button").removeAttr('disabled');
+        // $('form button').removeAttr('disabled')
+        console.log($('#deviceName').text());
+        console.log($('#deviceType').children("option:selected").val())
+        switch ($('#deviceType').children("option:selected").val()) {
+            case 'Garden':
+                $('#deviceName').html('Garden');
+                break;
+            case 'Lamp':
+                $('#deviceName').html('Lamp');
+                break;
+            case 'Temp':
+                $('#deviceName').html('Temp');
+                break;
+            case 'Door':
+                $('#deviceName').html('Door');
+                break;
+            default:
+                break;
+        }
+    })
+
     //Loading Button
     $("form").submit(function(e) {
         console.log('loading button');

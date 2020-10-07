@@ -37,7 +37,12 @@ class Firebase
             catch (\Kreait\Firebase\Auth\SignIn\FailedToSignIn | \InvalidArgumentException | InvalidToken | RevokedIdToken $e)
             {
                 $request->session()->flush();
-                return redirect()->route('login')->with('message', $e->getMessage());
+                $message = $e->getMessage();
+                if( $message == "The Firebase ID token has been revoked.")
+                {
+                    $message = "The credentials have been revoked. Please input your login information again";
+                }
+                return redirect()->route('login')->with('message', $message);
             }
         }
         else

@@ -13,7 +13,7 @@ class PasswordController extends Controller
     public function update(Request $request)
     {
         $oldPass = $request->current_password;
-        $newPass = $request->password;
+        $newPass = $request->password_new;
         $confirmPass = $request->password_confirmation;
 
         $array = [
@@ -32,12 +32,13 @@ class PasswordController extends Controller
         {
             $auth = app('firebase.auth');
             $user = Session::get('user');
+            $user = $user->uid;
             $uid = $auth->getUser($user);
             $email = $uid->email;
             $uid = $uid->uid;
             try
             {
-                // $user = $auth->signInWithEmailAndPassword($email, $oldPass);
+                $user = $auth->signInWithEmailAndPassword($email, $oldPass);
                 $updatePassword = $auth->changeUserPassword($uid, $newPass);
                 $firestore = app('firebase.firestore');
                 $firestore = $firestore->database();
@@ -53,7 +54,18 @@ class PasswordController extends Controller
                 $message = $e->getMessage();
                 return redirect()->route('profile')
                 ->withInput()
-                ->withErrors(['password' => $message]);
+                ->withErrors(['password_new' => $message]);
+            }
+            catch (\Kreait\Firebase\Auth\SignIn\FailedToSignIn $e)
+            {
+                $message = $e->getMessage();
+                if($message == 'INVALID_PASSWORD')
+                {
+                    $message = 'Password is incorrect';
+                }
+                return redirect()->route('profile')
+                ->withInput()
+                ->withErrors(['current_password' => $message]);
             }
         }
         return redirect()->route('profile');

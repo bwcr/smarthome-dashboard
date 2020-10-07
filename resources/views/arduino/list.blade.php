@@ -25,12 +25,13 @@
                     d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
             </svg> Refresh</a>
     </div>
-    <div class="collapse" id="tambahPerangkatId">
-        <div id="content-body" class="col-12 col-md-8 mb-3">
+    <div class="collapse col-12 col-md-8 mb-3" id="tambahPerangkatId">
+        <div id="content-body">
             <div class="card shadow-sm">
                 <div class="card-body">
                     <div class="card-title">
-                        <h4 id="heading" class="d-inline-flex small card-title">Tambah Perangkat</h4>
+                        <h4 id="heading" class="d-inline-flex small card-title">
+                            {{ __('Tambah Perangkat') }}</h4>
                     </div>
                     <div class="d-inline-block">
                         <div class="alert alert-info alert-dismissible fade show" role="alert">
@@ -52,27 +53,32 @@
 
                         </script>
                     </div>
-                    <form action="" method="post">
+                    <form action="{{ route('arduino.create') }}" method="post">
+                        @csrf
                         <div class="row">
-                            <div class="form-group col-md-5 col-lg-6 col-12">
-                                <label for="deviceType">Jenis Perangkat</label>
-                                <select class="form-control" name="deviceType" id="deviceType">
-                                    <option>Kebun</option>
-                                    <option>Pintu</option>
-                                    <option>Lampu</option>
-                                </select>
-                            </div>
                             <div class="form-group col-md-7 col-lg-6 col-12">
-                                <label for="deviceName">Nama Perangkat</label>
-                                <div class="d-flex">
-                                    <span class="mr-3 align-self-center">Lampu</span>
-                                    <input type="text" name="deviceName" id="deviceName" class="form-control"
-                                        placeholder="" aria-describedby="deviceNameId">
-                                </div>
+                                <label for="device_name">Device Name</label>
+                                <input type="text" name="device_name" id="device_name"
+                                    class="form-control @error('device_name') is-invalid @enderror" placeholder=""
+                                    aria-describedby="deviceNameId">
+                                @error('device_name')
+                                    <span class="invalid-feedback">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+                            <div class="form-group col-md-5 col-lg-6 col-12">
+                                <label for="device_type">Device Type</label>
+                                <select class="form-control" name="device_type" id="device_type">
+                                    <option value="Garden">Garden</option>
+                                    <option value="Lamp">Lamp</option>
+                                    <option value="Temp">Temp</option>
+                                    <option value="Door">Door</option>
+                                </select>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="ipAddress">
+                            <label for="ip_address">
                                 IP Address
                                 <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-info-circle-fill"
                                     fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -80,12 +86,17 @@
                                         d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
                                 </svg>
                             </label>
-                            <input type="text" class="form-control" name="ipAddress" id="ipAddress"
-                                aria-describedby="ipAddressHelp" placeholder="">
+                            <input type="text" class="form-control @error('ip_address') is-invalid @enderror"
+                                name="ip_address" id="ip_address" aria-describedby="ipAddressHelp" placeholder="">
+                            @error('ip_address')
+                                <span class="invalid-feedback">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
                         </div>
                         <div class="row">
                             <div class="form-group col-sm-6">
-                                <label for="ssidWifi">
+                                <label for="wifi_ssid">
                                     SSID Wifi
                                     <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-info-circle-fill"
                                         fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -93,16 +104,21 @@
                                             d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM8 5.5a1 1 0 1 0 0-2 1 1 0 0 0 0 2z" />
                                     </svg>
                                 </label>
-                                <input type="text" class="form-control" name="ssidWifi" id="ssidWifi"
+                                <input type="text" class="form-control" name="wifi_ssid" id="wifi_ssid"
                                     aria-describedby="ssidWifiId" placeholder="">
                             </div>
                             <div class="form-group col-sm-6">
-                                <label for="passwordWifi">Password Wifi</label>
-                                <input type="password" class="form-control" name="passwordWifi" id="passwordWifi"
-                                    placeholder="">
+                                <label for="wifi_password">Password Wifi</label>
+                                <input type="password" class="form-control @error('wifi_password') is-invalid @enderror"
+                                    name="wifi_password" id="wifi_password" placeholder="">
+                                @error('wifi_password')
+                                    <span class="invalid-feedback">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
                             </div>
                         </div>
-                        <button class="btn btn-sm btn-info" type="submit">Tambah Perangkat</button>
+                        <button class="btn btn-sm btn-info" type="submit">Add Device</button>
                     </form>
                 </div>
             </div>
@@ -130,11 +146,13 @@
 
         </script>
     </div>
-    <div class="col-12 my-3">
-        <h4 id="heading" class="small">Kebun</h4>
-    </div>
-    @foreach($farm as $snapshot)
-        <div id="content-body" class="col-12 col-md-6 col-lg-4 col-xl-4 mb-3">
+    @if($garden)
+        <div class="col-12 my-3">
+            <h4 id="heading" class="small">{{ __('Garden') }}</h4>
+        </div>
+    @endif
+    @foreach($garden as $snapshot)
+        <div id="content-body" class="col-12 col-sm-5 col-lg-4 col-xl-3 mb-3">
             <div id="device" class="card shadow-sm">
                 <div class="card-body">
                     <div class="card-title">
@@ -144,7 +162,7 @@
                     </div>
                     <div class="d-inline-flex">
                         <div class="align-self-center d-inline-block text-primary">
-                            <svg width="6em" height="7em" viewBox="0 0 16 16" class="bi bi-phone" fill="currentColor"
+                            <svg width="5em" height="6em" viewBox="0 0 16 16" class="bi bi-phone" fill="currentColor"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd"
                                     d="M11 1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H5z" />
@@ -153,9 +171,7 @@
                         </div>
                         <div class="d-inline-block">
                             <h6 class="text-success font-weight-bold text-uppercase">• Aktif</h6>
-                            <label for="serialNumber">ID</label>
-                            <h6 class="font-weight-bold">{{ $snapshot->id() }}</h6>
-                            <label for="serialNumber">Pembaruan Terakhir</label>
+                            <label for="serialNumber">{{__('Last Updated')}}</label>
                             <h6 class="font-weight-bold">29/07/20 16:00</h6>
                         </div>
                     </div>
@@ -166,7 +182,7 @@
         </div>
     @endforeach
     <div class="col-12 my-3">
-        <h4 id="heading" class="small">Rumah</h4>
+        <h4 id="heading" class="small">{{ __('Rumah') }}</h4>
     </div>
     @foreach($lamp as $snapshot)
         <div id="content-body" class="col-12 col-md-6 col-lg-4 col-xl-4 mb-3">
@@ -187,9 +203,7 @@
                         </div>
                         <div class="d-inline-block">
                             <h6 class="text-success font-weight-bold text-uppercase">• Aktif</h6>
-                            <label for="serialNumber">ID</label>
-                            <h6 class="font-weight-bold">{{ $snapshot->id() }}</h6>
-                            <label for="serialNumber">Pembaruan Terakhir</label>
+                            <label for="serialNumber">{{__('Last Updated')}}</label>
                             <h6 class="font-weight-bold">29/07/20 16:00</h6>
                         </div>
                     </div>
