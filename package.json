@@ -23,6 +23,7 @@
         "vue-template-compiler": "^2.6.12"
     },
     "dependencies": {
-        "firebase": "^7.21.0"
+        "firebase": "^7.22.1",
+        "grpc-web": "^1.2.1"
     }
 }
