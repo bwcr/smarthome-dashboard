@@ -17,13 +17,20 @@ class SensorController extends Controller
         $data = $request->all();
 
         $document = $firestore->collection('users')->document($id)->collection('devices')->document($deviceId);
-        $addData = $document->update([
-            [
-                'path' => 'sensor',
-                'value' => FieldValue::arrayUnion([$data])
-            ]
-        ]);
-        return $addData;
+        $snapshot = $document->snapshot();
+        if($snapshot->exists()){
+            $addData = $document->update([
+                [
+                    'path' => 'sensor',
+                    'value' => FieldValue::arrayUnion([$data])
+                ]
+            ]);
+            return $addData;
+        }
+        else {
+            return printf('Document %s does not exist!' . PHP_EOL, $snapshot->id());
+        }
+
         // die(print_r($request));
     }
     public function sync(Request $request, $id, $deviceId)
@@ -32,13 +39,18 @@ class SensorController extends Controller
         $firestore = $firestore->database();
 
         $document = $firestore->collection('users')->document($id)->collection('devices')->document($deviceId);
-        $data = $document->snapshot()->data();
-        $dataArray = [
-            'wifi_ssid' => $data['wifi_ssid'],
-            'wifi_password' => $data['wifi_password'],
-            'ip_address' => $data['ip_address']
-        ];
-
-        return $dataArray;
+        $snapshot = $document->snapshot();
+        if($snapshot->exists()) {
+            $data = $snapshot->data();
+            $dataArray = [
+                'wifi_ssid' => $data['wifi_ssid'],
+                'wifi_password' => $data['wifi_password'],
+                'ip_address' => $data['ip_address']
+            ];
+            return $dataArray;
+        }
+        else {
+            return printf('Document %s does not exist!' . PHP_EOL, $snapshot->id());
+        }
     }
 }
