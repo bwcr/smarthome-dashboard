@@ -5,6 +5,8 @@
 /vendor
 .env
 .env.backup
+firebaseKey.json
+smarthomeproject-d187f-a84edb54ee7f.json
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
