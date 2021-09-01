@@ -1,16 +1,18 @@
 @extends('layouts.app')
 
+@section('title', 'Register')
+
 @section('content')
 <div class="container">
     <div class="row vh-100">
         <div class="col-lg-4 col m-auto">
             <div class="card shadow-lg">
                 <div class="card-body">
-                    <small id="heading">{{ __('Daftar') }}</small>
+                    <small id="heading">{{ __('Register') }}</small>
                     <form action="{{ route('user.create') }}" method="POST" id="registerForm"
                         class="row">
                         @csrf
-                        <div class="form-group col-6">
+                        <div class="form-group col-md-6 col-12">
                             <label for="first_name">{{ __('First Name') }}</label>
                             <input type="text" class="form-control @error('first_name') is-invalid @enderror"
                                 name="first_name" value="{{ old('first_name') }}" id="first_name"
@@ -22,7 +24,7 @@
                                 </span>
                             @enderror
                         </div>
-                        <div class="form-group col-6">
+                        <div class="form-group col-md-6 col-12">
                             <label for="last_name">{{ __('Last Name') }}</label>
                             <input type="text" class="form-control @error('last_name') is-invalid @enderror"
                                 name="last_name" value="{{ old ('last_name') }}" id="last_name"
@@ -33,6 +35,9 @@
                                     <strong>{{ $message }}</strong>
                                 </span>
                             @enderror
+                        </div>
+                        <div class="mt-n3 col">
+                            <small>Name only contains maximum of 2 words. Example: John Smith</small>
                         </div>
                         <div class="form-group col-12">
                             <label for="email">{{ __('email') }}</label>

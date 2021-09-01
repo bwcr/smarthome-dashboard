@@ -10,26 +10,25 @@ use Kreait\Firebase\Auth;
 
 class ProfileController extends Controller
 {
-    //
 
-    public function index()
+    public function index(Request $request)
     {
-        $userSession = Session::get('user');
-        // die($userSession);
-        $auth = app('firebase.auth');
-        $firestore = app('firebase.firestore');
+        $userSession = $request->session()->get('user');
+        $uid = $userSession->uid;
 
-        // $userId = $auth->getUser($userSession);
-        // die($userId->uid);
-        $firestore = $firestore->database();
+        $auth = app('firebase.auth');
+        $user = $auth->getUser($uid);
 
         //Firestore
+        $firestore = app('firebase.firestore');
+        $firestore = $firestore->database();
+
         $collectionReference = $firestore->collection('users');
         $documentReference = $collectionReference->document($userSession->uid);
         $snapshot = $documentReference->snapshot();
 
         $initial = substr($snapshot['first_name'], 0, 1) . substr($snapshot['last_name'], 0, 1);
-        return view('profile.edit')->with(['snapshot' => $snapshot, 'initial' => $initial]);
+        return view('profile.edit')->with(['initial' => $initial, 'user' => $user]);
     }
 
     public function edit(Request $request)
@@ -37,12 +36,5 @@ class ProfileController extends Controller
         return view('profile.edit', [
             'user' => $request->user()
         ]);
-    }
-
-    public function update(Request $request)
-    {
-        $auth = app('firebase.auth');
-        $oldPass = $request['current_password'];
-        $newPass = $request['password'];
     }
 }

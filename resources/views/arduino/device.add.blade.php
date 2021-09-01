@@ -98,3 +98,7 @@
 </div>
 
 @endsection
+
+@push('scripts')
+    <script type="module" src="{{ asset('js/gmaps.js') }}"></script>
+@endpush

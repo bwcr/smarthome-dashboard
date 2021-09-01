@@ -6,6 +6,7 @@ use App\Http\Requests\UpdatePasswordRequest;
 use Google\Cloud\Firestore\FirestoreClient;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Hash;
 
 class PasswordController extends Controller
@@ -22,37 +23,45 @@ class PasswordController extends Controller
 
         if($newPass != $confirmPass)
         {
-            $message = "The password does not match";
+            $message = "Password salah";
             return redirect()
             ->route('profile')
             ->withInput()
             ->withErrors(['password_confirmation' => $message]);
         }
-        else
-        {
             $auth = app('firebase.auth');
-            $user = Session::get('user');
+            $user = $request->session()->get('user');
             $user = $user->uid;
             $uid = $auth->getUser($user);
             $email = $uid->email;
             $uid = $uid->uid;
             try
             {
-                $user = $auth->signInWithEmailAndPassword($email, $oldPass);
-                $updatePassword = $auth->changeUserPassword($uid, $newPass);
+                $auth->signInWithEmailAndPassword($email, $oldPass);
+                $auth->changeUserPassword($uid, $newPass);
                 $firestore = app('firebase.firestore');
                 $firestore = $firestore->database();
                 $firestore->collection('users')->document($uid)
                 ->set($array, ['merge' => true]);
 
-                $message = 'Password has been succesfully updated';
+                $message = 'Password diperbarui';
                 $request->session()->flash('success', $message);
-                return redirect()->route('profile');
+
+                return redirect()->back();
+                // $auth->signInWithEmailAndPassword($email, $newPass);
+                // return redirect()->route('user.login')->with(['email' => $email, 'password' => $newPass]);
             }
             catch (\Kreait\Firebase\Exception\Auth\WeakPassword $e)
             {
                 $message = $e->getMessage();
-                return redirect()->route('profile')
+                return redirect()->back()
+                ->withInput()
+                ->withErrors(['password_new' => $message]);
+            }
+            catch (\Kreait\Firebase\Exception\InvalidArgumentException $e)
+            {
+                $message = $e->getMessage();
+                return redirect()->back()
                 ->withInput()
                 ->withErrors(['password_new' => $message]);
             }
@@ -61,13 +70,12 @@ class PasswordController extends Controller
                 $message = $e->getMessage();
                 if($message == 'INVALID_PASSWORD')
                 {
-                    $message = 'Password is incorrect';
+                    $message = 'Password salah';
                 }
                 return redirect()->route('profile')
                 ->withInput()
                 ->withErrors(['current_password' => $message]);
             }
-        }
-        return redirect()->route('profile');
+            return redirect()->route('profile');
     }
 }

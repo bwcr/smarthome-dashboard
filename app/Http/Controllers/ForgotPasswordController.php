@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Session;
 
 class ForgotPasswordController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
         return view('auth.passwords.email');
     }
@@ -21,15 +21,13 @@ class ForgotPasswordController extends Controller
         try
         {
             $auth->sendPasswordResetLink($email);
-            Session::flash('message', 'Reset password link has been sent to your email');
+            Session::flash('message', 'Silahkan cek email anda untuk reset password');
             return redirect()->route('login');
         }
-        catch (\Kreait\Firebase\Exception\Auth\EmailNotFound | \Kreait\Firebase\Auth\SendActionLink\FailedToSendActionLink $e)
+        catch (\Kreait\Firebase\Auth\SendActionLink\FailedToSendActionLink $e)
         {
             $message = $e->getMessage();
-                return redirect()->route('user.forgot')
-                ->withInput()
-                ->withErrors(['email' => $message]);
+            return back()->withInput()->withErrors(['email' => "Kami tidak dapat menemukan email anda"]);
         }
 
     }

@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Login')
+
 @section('content')
 <div class="container">
     <div class="row vh-100">
@@ -12,15 +14,16 @@
             <div class="card shadow-lg">
                 <div class="card-body">
                     @if(Session::has('message'))
-                        <div class="alert alert-info alert-dismissible fade show" role="alert">
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                                <span class="sr-only">Close</span>
-                            </button>
-                            <strong>{{ Session::get('message') }}</strong>
-                        </div>
+                    <x-alert>
+                        {!! Session::get('message') !!}
+                    </x-alert>
                     @endif
-                    <form method="POST" action="{{ route('user.login') }}" id="formLogin">
+                    @if(Session::has('success'))
+                        <x-alert>
+                            {!! Session::get('success') !!}
+                        </x-alert>
+                    @endif
+                    <form method="POST" action="{{ route('user.login', ['redirect' => Request::get('redirect')]) }}" id="formLogin">
                         @csrf
                         <div class="form-group">
                             <label for="email">{{ __('Email') }}</label>

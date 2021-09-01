@@ -33,14 +33,14 @@ class FirebaseController extends Controller
 
         $validator = Validator::make($data->all(), [
             'email' => 'required|email',
-            'first_name' => 'required|alpha',
-            'last_name' => 'alpha',
+            'first_name' => "required|regex:/^([A-Z][a-z]+([ ]?[a-z]?['-]?[A-Z][a-z]+)*)$/",
+            'last_name' => "nullable|regex:/^([A-Z][a-z]+([ ]?[a-z]?['-]?[A-Z][a-z]+)*)$/",
             'password' => 'required|min:6',
             'password_confirmation' => 'required|same:password'
         ]);
 
         if ($validator->fails()) {
-            return redirect()->route('register')
+            return back()
             ->withErrors($validator)
             ->withInput();
         }
@@ -51,7 +51,6 @@ class FirebaseController extends Controller
             {
                 $createdUser = $auth->createUser($userProperties);
 
-                //Firestore
                 $userProperties = [
                     'first_name' => $data['first_name'],
                     'last_name' => $data['last_name'],
@@ -62,6 +61,7 @@ class FirebaseController extends Controller
                 $user = $auth->getUserByEmail($data['email']);
                 $uid = $user->uid;
 
+                //Firestore
                 $firestore = $firestore->database();
 
                 $firestore->collection('users')->document($uid)->set($userProperties);
@@ -69,8 +69,7 @@ class FirebaseController extends Controller
                 //Send email
                 $sendEmail = $auth->sendEmailVerificationLink($data['email']);
 
-                Session::flash('success', 'You have succesfully signed up! Be sure to check your email for verification to sign in');
-                return redirect()->route('login');
+                return redirect()->route('login')->with(['message' => 'Anda berhasil daftar. Silahkan verifikasi melalui email sebelum sign in']);
             }
             catch (\Kreait\Firebase\Exception\Auth\EmailExists $e)
             {
@@ -116,15 +115,21 @@ class FirebaseController extends Controller
             {
                 $auth->signInWithEmailAndPassword($email, $userProperties['password']);
                 $auth->changeUserEmail($userSession, $data['email']);
+                $verified = [
+                    'emailVerified' => false
+                ];
+                $auth->updateUser($userSession, $verified);
 
                 //Update Firestore
                 $firestore->collection('users')->document($userSession)->set($userProperties, ['merge' => true]);
-                return redirect()->route('login')->with('message', 'Your data has been successfully update, please attempt to login for reauthenticate');
+                $data->session()->flush();
+                $sendEmail = $auth->sendEmailVerificationLink($data['email']);
+                return redirect()->route('login')->with('message', 'Anda berhasil memperbarui email anda. Silahkan verifikasi melalui email sebelum sign in');
             }
             catch (\Kreait\Firebase\Exception\Auth\EmailExists $e)
             {
                 $message = $e->getMessage();
-                return redirect()->route('profile')
+                return back()
                 ->withErrors(['email' => $message])
                 ->withInput();
             }
@@ -133,18 +138,17 @@ class FirebaseController extends Controller
                 $message = $e->getMessage();
                 if($message == 'INVALID_PASSWORD')
                 {
-                    $message = 'Password is incorrect';
+                    $message = 'Password salah';
                 }
-                return redirect()->route('profile')
+                return back()
                 ->withErrors(['password' => $message])
                 ->withInput();
             }
         }
-
     }
     public function update(Request $data)
     {
-
+        $auth = app('firebase.auth');
         $firestore = app('firebase.firestore');
         $firestore = $firestore->database();
 
@@ -153,37 +157,36 @@ class FirebaseController extends Controller
             'last_name' => $data['last_name']
         ];
 
+        $fullName = $data['first_name'] . ' ' . $data['last_name'];
+
+        $properties = [
+            'displayName' => $fullName
+        ];
+
         $user = Session::get('user');
 
         $userSession = $user->uid;
 
         $validator = Validator::make($data->all(), [
-            'first_name' => 'required|alpha',
-            'last_name' => 'nullable|alpha'
-        ]);
+            'first_name' => "required|regex:/^([A-Z][a-z]+([ ]?[a-z]?['-]?[A-Z][a-z]+)*)$/",
+            'last_name' => "nullable|regex:/^([A-Z][a-z]+([ ]?[a-z]?['-]?[A-Z][a-z]+)*)$/",
+        ])->validate();
 
-        if ($validator->fails()) {
-            return redirect()->route('profile')
-            ->withErrors($validator)
-            ->withInput();
-        }
-
-        else
+        try
         {
-            try
-            {
-                //Update Firestore
-                $firestore->collection('users')->document($userSession)->set($userProperties, ['merge' => true]);
-                // $data->session()->flush();
-                return redirect()->route('profile')->with('success', 'Data has been successfully updated');
-            }
-            catch (\Kreait\Firebase\Exception\Auth\AuthError | \Kreait\Firebase\Exception\Auth\EmailExists $e)
-            {
-                $message = $e->getMessage();
-                return redirect()->route('login')
-                ->withInput()
-                ->withErrors(['email' => $message]);
-            }
+            //Update Firestore
+            $firestore->collection('users')->document($userSession)->set($userProperties, ['merge' => true]);
+            //Update Auth
+            $auth->updateUser($userSession, $properties);
+
+            return redirect()->route('profile')->with('success', 'Data berhasil diperbarui');
+        }
+        catch (\Kreait\Firebase\Exception\Auth\AuthError | \Kreait\Firebase\Exception\Auth\EmailExists $e)
+        {
+            $message = $e->getMessage();
+            return redirect()->route('login')
+            ->withInput()
+            ->withErrors(['email' => $message]);
         }
     }
 
@@ -195,25 +198,32 @@ class FirebaseController extends Controller
 
         try
         {
+            //Define variables
             $auth = app('firebase.auth');
             $pass = $data['password_delete'];
-            $uid = Session::get('user');
+            $uid = Session::get('uid');
             $email = $auth->getUser($uid)->email;
 
-            $signInResult = $auth->signInWithEmailAndPassword($email, $pass);
+            //Check password if correct
+            $auth->signInWithEmailAndPassword($email, $pass);
+
+            //Delete user from auth and firestore
             $auth->deleteUser($uid);
             $firestore->collection('users')->document($uid)->delete();
 
+            //Forget session
             $data->session()->forget('user');
-            $data->session()->flash('success', 'You have successfully deleted your account');
 
-            return redirect()->route('logout');
+            return redirect()->route('login')->with('message', 'Anda berhasil menghapus akun anda');
 
         }
         catch (\Kreait\Firebase\Auth\SignIn\FailedToSignIn | \Kreait\Firebase\Exception\Auth\AuthError $e)
         {
             $message = $e->getMessage();
-            return redirect()->route('profile')
+            if ($message == "INVALID_PASSWORD") {
+                $message = "Password salah";
+            }
+            return back()
             ->withInput()
             ->withErrors(['password_delete' => $message]);
         }

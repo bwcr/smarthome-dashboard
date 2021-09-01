@@ -15,9 +15,9 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return redirect('/login');
+// });
 
 // Auth::routes();
 
@@ -25,43 +25,53 @@ Route::get('/', function () {
 
 Route::get('/home', 'HomeController@index')->name('home');
 
-// Route::group(['middleware' => 'auth'], function () {
-
-//     Route::get('profile', 'ProfileController@edit')->name('profile.edit');
-
-//     Route::patch('profile', 'ProfileController@update')->name('profile.update');
-
-//     Route::get('password', 'PasswordController@edit')->name('user.password.edit');
-
-//     Route::patch('password', 'PasswordController@update')->name('user.password.update');
-// });
-
 Route::get('/register', 'FirebaseController@index')->name('register');
+Route::post('/register','FirebaseController@create')->name('user.create');
+
 Route::get('/login', 'LoginController@index')->name('login');
+Route::get('/', 'LoginController@index')->name('login');
+Route::post('/login', 'LoginController@user')->name('user.login');
+
 Route::get('/forgot', 'ForgotPasswordController@index')->name('user.forgot');
 Route::post('/forgot', 'ForgotPasswordController@reset')->name('user.reset');
 
-Route::post('/user', 'LoginController@user')->name('user.login');
-Route::post('/create','FirebaseController@create')->name('user.create');
-
-Route::get('/logout', 'LoginController@logout')->name('logout');
-Route::post('/logout', 'LoginController@logout');
 
 Route::group(['middleware' => 'firebase'], function () {
-    Route::get('/profile','ProfileController@index')->name('profile');
-    Route::post('/profile/user/update','FirebaseController@update')->name('user.update');
-    Route::post('/profile/user/email/update', 'FirebaseController@email')->name('email.update');
-    Route::post('/profile/user/delete','FirebaseController@delete')->name('user.delete');
+    Route::get('/logout', 'LoginController@logout')->name('logout');
+    Route::get('/dashboard', 'DashboardController@index')->name('dashboard');
 
-    Route::post('/profile/password/update', 'PasswordController@update')->name('password.update');
+    Route::prefix('profile')->group(function(){
+        Route::get('/','ProfileController@index')->name('profile');
+        Route::put('/','FirebaseController@update')->name('user.update');
+
+        Route::put('/email', 'FirebaseController@email')->name('email.update');
+        Route::delete('/','FirebaseController@delete')->name('user.delete');
+        Route::put('/password', 'PasswordController@update')->name('password.update');
+    });
+
+    Route::get('control', 'ControlController@index')->name('control');
 
     //Arduino
-    Route::get('arduino', 'ArduinoController@index')->name('arduino');
-    Route::post('arduino/create' , 'ArduinoController@create')->name('arduino.create');
-    Route::get('arduino/{id}', 'ArduinoController@read')->name('arduino.read');
-    Route::post('arduino/update/{id}', 'ArduinoController@update')->name('arduino.update');
-    Route::post('arduino/delete/{id}', 'ArduinoController@delete')->name('arduino.delete');
-});
+    Route::prefix('device')->group(function() {
+        Route::get('/', 'ArduinoController@index')->name('arduino');
+        Route::post('/' , 'ArduinoController@create')->name('arduino.create');
 
-Route::get('{id}/{deviceId}/sensor/add', 'SensorController@add')->name('sensor.add');
-Route::get('{id}/{deviceId}/sensor/sync', 'SensorController@sync')->name('sensor.sync');
+        Route::get('/{id}', 'ArduinoController@read')->name('arduino.read');
+        Route::put('/{id}', 'ArduinoController@update')->name('arduino.update');
+        Route::delete('/{id}', 'ArduinoController@delete')->name('arduino.delete');
+
+        Route::prefix('house/{id}')->group(function() {
+            Route::get('/', 'HouseController@read')->name('house.read');
+            Route::put('/', 'HouseController@update')->name('house.update');
+            Route::delete('/', 'HouseController@delete')->name('house.delete');
+            Route::post('/', 'HouseController@create')->name('house.add');
+
+            //Lamp
+            Route::prefix('/{lampId}')->group(function() {
+                Route::get('/', 'LampController@index')->name('lamp.read');
+                Route::put('/', 'LampController@update')->name('lamp.update');
+                Route::delete('/', 'LampController@destroy')->name('lamp.delete');
+            });
+        });
+    });
+});

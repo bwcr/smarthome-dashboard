@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Firebase\Auth\Token\Exception\InvalidToken;
 use Illuminate\Support\Facades\Session;
-use Kreait\Firebase\Exception\Auth\RevokedIdToken;
+// use Kreait\Firebase\Exception\Auth\RevokedIdToken;
 use Illuminate\Http\Request;
 
 class Firebase
@@ -20,34 +20,59 @@ class Firebase
     public function handle($request, Closure $next)
     {
         $auth = app('firebase.auth');
-        if(Session::has('tokenResponse'))
+        $redirect = redirect()->route('login', ['redirect' => url()->full()]);
+
+        if(Session::has('asTokenResponse'))
         {
-            $tokenResponse = Session::get('tokenResponse');
-            $tokenId = $tokenResponse['id_token'];
+            $tokenResponse = Session::get('asTokenResponse');
 
             try
             {
-                $verifiedIdToken = $auth->verifyIdToken($tokenId, $checkIfRevoked = true);
+                $signInResult = $auth->signInWithRefreshToken($tokenResponse['refresh_token']);
+                $idToken = $signInResult->idToken();
+                // $idToken = $tokenResponse['id_token'];
+                $verifiedIdToken = $auth->verifyIdToken($idToken, $checkIfRevoked = true);
+
                 $uid = $verifiedIdToken->getClaim('sub');
+                $request->session()->flash('uid', $uid);
+
                 $user = $auth->getUser($uid);
                 $request->session()->flash('user', $user);
-
+                // die(print_r($verifiedIdToken));
                 return $next($request);
             }
-            catch (\Kreait\Firebase\Auth\SignIn\FailedToSignIn | \InvalidArgumentException | InvalidToken | RevokedIdToken $e)
+            catch (\Kreait\Firebase\Auth\SignIn\FailedToSignIn $e)
             {
                 $request->session()->flush();
-                $message = $e->getMessage();
-                if( $message == "The Firebase ID token has been revoked.")
+                $message = "Sistem gagal melakukan login";
+                if($e->getMessage() == 'TOKEN_EXPIRED')
                 {
-                    $message = "The credentials have been revoked. Please input your login information again";
+                    $message = 'Mohon lakukan login kembali sebelum melanjutkan';
                 }
-                return redirect()->route('login')->with('message', $message);
+                return $redirect->with('message', $message);
+            }
+            catch (\InvalidArgumentException $e)
+            {
+                $request->session()->flush();
+                $message = "Sepertinya ada error pada sistem, mohon lakukan login ulang. Error: ".$e;
+                return $redirect->with('message', $message);
+            }
+            catch (InvalidToken $e)
+            {
+                $request->session()->flush();
+                $message = "Sepertinya ada error pada sistem, mohon lakukan login ulang. Error: ".$e;
+                return $redirect->with('message', $message);
+            }
+            catch (RevokedIdToken $e)
+            {
+                $request->session()->flush();
+                $message = "Mohon lakukan login kembali. Error: ".$e;
+                return $redirect->with('message', $message);
             }
         }
         else
         {
-            return redirect()->route('login');
+            return $redirect;
         }
 
     }
