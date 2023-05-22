@@ -1,3 +1,4 @@
+
 # SmartHome
 ## Apa itu Smarthome?
 Aplikasi Smarthome merupakan aplikasi berbasis web yang dibuat oleh tim rumah kebun untuk memenuhi tugas akhir Jurusan Informatika, Fakultas Sains dan Matematika, Universitas Diponegoro. Aplikasi ini mampu menyediakan rekapitulasi data sensor untuk sebuah perangkat arduino yang dibuat khusus oleh tim rumah kebun. Proyek ini dibawahi oleh penanggung jawab tim rumah kebun.
@@ -21,3 +22,6 @@ Program ini menggunakan Bahasa Indonesia, pengembang dengan senang hati menyedia
 
 ## Lisensi
 [MIT](https://choosealicense.com/licenses/mit/)
+
+## Screenshots
+![App Screenshot](https://i.ibb.co/0n8q3Wj/Fire-Shot-Capture-080-Dashboard-Aplikasi-Monitoring-Io-T-bwcr-insightdata-xyz.png)
